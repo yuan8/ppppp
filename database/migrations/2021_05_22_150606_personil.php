@@ -21,9 +21,9 @@ class Personil extends Migration
             $table->string('dik_bang_pers')->nullable();
             $table->string('pangkat')->nullable();
             $table->string('jabatan')->nullable();
-            $table->json('pendidikan_umum');
-            $table->json('pendidikan_bagian_personil');
-            $table->json('ijazah');
+            $table->mediumText('pendidikan_umum')->nullable();
+            $table->mediumText('pendidikan_bagian_personil')->nullable();
+            $table->mediumText('ijazah')->nullable();
             $table->bigInteger('id_user_c')->nullable();
             $table->bigInteger('id_user_u')->nullable();
 
