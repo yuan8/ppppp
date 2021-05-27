@@ -178,11 +178,9 @@ class DataCtrl extends Controller
 
 
         if($request->q){
-            $where[]="d.title like '%".$request->q."%'";
+            $where[]="d.no_dokumen like '%".$request->q."%'";
             $where[]="c.content like '%".$request->q."%'";
             $where[]="d.perihal like '%".$request->q."%'";
-
-
         }
 
 

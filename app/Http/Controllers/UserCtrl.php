@@ -264,6 +264,8 @@ class UserCtrl extends Controller
 	}
 
     public function index(Request $request){
+
+        
     	$def=[
     		[
     			'u.id <>'.Auth::User()->id
