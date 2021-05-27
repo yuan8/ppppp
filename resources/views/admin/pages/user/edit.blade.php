@@ -36,20 +36,14 @@
   				</div>
   			</div>
   			<div class="col-md-6">
-  			{{-- 	<div class="form-group">
-  					<label>EMAIL</label>
-  					<input type="email" value="{{$data->email}}" class="form-control" required="" name="email">
-  				</div> --}}
+  			
           @can('is_supper')
-
   				<div class="form-group">
   					<label>ROLE</label>
   					<select class="form-control" required="" name="role">
-  						@foreach ($role as $k=> $r)
-  						<option value="{{$k}}" {{$data->role==$k?'selected':''}}}>{{$r}}</option>
-  							{{-- expr --}}
+  						@foreach($role??[] as $k=> $r)
+  						  <option value="{{$k}}"  {{$data->role==$k?'selected':''}} >{{$r}}</option>
   						@endforeach
-  						
   					</select>
   				</div>
           <div class="form-group" id="post_type_group">
@@ -59,7 +53,6 @@
                 <option value="{{$element->id}}" {{in_array($element->id,$data->post_type)?'selected':''}} >{{$element->name}}</option>
               @endforeach
             </select>
-            
           </div>
           @endcan
   				
@@ -103,10 +96,10 @@
    </form>
   </div>
 
+
  @stop
 
  @section('js')
-
 
  <script type="text/javascript">
 
@@ -119,7 +112,9 @@
  		}
  	});
 
+  $('[name="role"]').val({{$data->role}});
  	$('[name="role"]').trigger('change');
+
  	$('#post_type').select2();
  </script>
  @stop

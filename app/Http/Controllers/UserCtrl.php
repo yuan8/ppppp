@@ -47,6 +47,7 @@ class UserCtrl extends Controller
     		if(Auth::User()->role<=1 and (Auth::User()->id!=$id) and ($data->role==2)){
 
     			$up['role']=$request->role;
+
     			if($up['role']==1){
     				DB::table('user_group_post_type')->where('id_user',$id)->delete();
     			}else{
@@ -219,8 +220,6 @@ class UserCtrl extends Controller
             'jabatan'=>$request->jabatan,
             'pangkat'=>$request->pangkat,
             'role'=>$request->role,
-            // 'api_token'=>Hash::make($request->email),
-
         ];
 
 
