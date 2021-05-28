@@ -12,12 +12,12 @@ class UserCtrl extends Controller
 {
     //
 
-
     public function update($id,Request $request){
     	$valid=Validator::make($request->all(),[
     		'name'=>'string|required',
             'jabatan'=>'string|required',
             'pangkat'=>'string|required',
+            
     	]);
 
     	 if($valid->fails()){

@@ -121,6 +121,49 @@
             </div>
           </div>
         </div>
+         <div class="form-group" id="content-data-lainya">
+          <label>DATA PENDUKUNG</label>
+          <div>
+            <button class="btn btn-primary btn-xs" v-on:click="add_row()" type="button">Tambah Data Pendukung</button>
+            <hr>
+          </div>
+          <div  >
+             <div v-for="itm in items ">
+                 <div class="row">
+                  <div class="col-md-1">
+                    <a  v-bind:href="itm.file_recorded"  >
+                      <img v-bind:src="itm.file_recorded" class="img-thumbnail" style="width:100%">
+                    </a>
+                  </div>
+                   <div class="col-md-1 text-center">
+                    <label class="">AKSI</label>
+                    <div class="form-group text-center">
+                      <button class="btn btn-xs btn-danger" v-on:click="remove(itm)">
+                        <i class="fa fa-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                 <div class="col-md-3">
+                    <label>Jenis </label>
+                    <select class="form-control" v-bind:name="'order['+itm.id+'][tag]'" required="" v-model="itm.tag">
+                        @foreach (config('websetting.meta.order_tag')??[] as $element)
+                                <option value="{{$element}}" >{{$element}}</option>
+                        @endforeach
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label>Label</label>
+                    <input type="text" class="form-control" v-bind:name="'order['+itm.id+'][label]'" v-model="itm.label">
+                  </div>
+                  <div class="col-md-3">
+                    <label>File</label>
+                       <input type="hidden" v-bind:name="'order['+itm.id+'][file_recorded]'"  v-model="itm.file_recorded">
+                    <input type="file"  accept="image/*"  class="form-control" v-bind:name="'order['+itm.id+'][file]'">
+                  </div>
+               </div>
+            </div>
+          </div>
+        </div>
 
   	 		
 		</div>
@@ -164,6 +207,32 @@
 
        var pendidikan_bagian_personil=new Vue({
         el:'#content-pendidikan-bagain-personil',
+        data:{
+          items:[]
+        },
+        methods:{
+          add_row:function(){
+            this.items.push({
+              'tag':null,
+              'id':this.items.length==0?0:this.items.length+1,
+              'label':null,
+              'file_recorded':null
+            });
+          },
+          remove:function(item){
+              this.items.splice(item.id,1);
+              for (var i = 0; i < this.items.length; i++) {
+                this.items[i].id=i;
+              }
+
+          }
+
+
+        }
+      });
+
+       var data_lainya=new Vue({
+        el:'#content-data-lainya',
         data:{
           items:[]
         },

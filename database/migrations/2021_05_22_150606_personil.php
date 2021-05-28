@@ -23,10 +23,10 @@ class Personil extends Migration
             $table->string('jabatan')->nullable();
             $table->mediumText('pendidikan_umum')->nullable();
             $table->mediumText('pendidikan_bagian_personil')->nullable();
+            $table->mediumText('order')->nullable();
             $table->mediumText('ijazah')->nullable();
             $table->bigInteger('id_user_c')->nullable();
             $table->bigInteger('id_user_u')->nullable();
-
 
             $table->timestamps();
         });

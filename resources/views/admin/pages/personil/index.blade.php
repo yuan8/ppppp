@@ -14,7 +14,7 @@
 		<hr>
 		<form action="{{url()->full()}}" method="get" id="form-filter">
 			<div class="row">
-				<div class="col-md-4">
+				<div class="col-md-3">
 					<div class="form-group">
 						<label>PENDIDIKAN UMUM</label>
 						<select class="form-control filter-data" name="pendidikan_umum">
@@ -25,7 +25,9 @@
 						</select>
 					</div>
 				</div>
-				<div class="col-md-4">
+				
+
+				<div class="col-md-3">
 					<div class="form-group">
 						<label>PENDIDIKAN BAGIAN PERSONIL</label>
 						<select class="form-control  filter-data" name="pendidikan_bagian_personil">
@@ -36,8 +38,22 @@
 							@endforeach
 						</select>
 					</div>
+					
 				</div>
-				<div class="col-md-4">
+				<div class="col-md-3">
+
+					<div class="form-group">
+						<label>DATA PENDUKUNG</label>
+						<select class="form-control  filter-data" name="order">
+							<option value="">-</option>
+
+							@foreach (config('websetting.meta.order_tag')??[] as $element)
+								<option value="{{$element}}" {{$request->order==$element?'selected':''}}>{{$element}}</option>
+							@endforeach
+						</select>
+					</div>
+				</div>
+				<div class="col-md-3">
 					<div class="form-group">
 						<label>SEARCH</label>
 						<input type="text" class="form-control filter-data" name="q" value="{{$request
@@ -58,6 +74,7 @@
 						<th>JABATAN</th>
 						<th>PENDIDIKAN UMUM</th>
 						<th>PENDIDIKAN BAGIAN PERSONIL</th>
+						<th>DATA PENDUKUNG</th>
 						<th>AKSI</th>
 					</tr>
 				</thead>
@@ -73,6 +90,9 @@
 						</td>
 						<td>
 							{{implode(', ',$element->pendidikan_bagian_personil->pluck('tag')->toArray())}}
+						</td>
+						<td>
+							{{implode(', ',$element->order->pluck('tag')->toArray())}}
 						</td>
 						<td>
 							<div class="btn-group">

@@ -36,6 +36,7 @@ class PersonilCtrl extends Controller
 		if($data){
 			$data->pendidikan_umum=collect(static::meta_pendidikan($data->pendidikan_umum));
 			$data->pendidikan_bagian_personil=collect(static::meta_pendidikan($data->pendidikan_bagian_personil));
+			$data->order=collect(static::meta_pendidikan($data->order));
 
 			return view('admin.pages.personil.edit')->with([
 				'data'=>$data,
@@ -93,6 +94,27 @@ class PersonilCtrl extends Controller
 			}
 		}
 
+		$order=[];
+
+		if($request->order){
+			foreach ($request->order as $key => $value) {
+				$pm=[
+					'label'=>$value['label'],
+					'tag'=>$value['tag'],
+					'file_recorded'=>isset($value['file_recorded'])?str_replace(url(''), '', $value['file_recorded']):null
+
+				];
+
+				if(!empty($request->order[$key]['file'])){
+					$pm['file_recorded']=Storage::put('public/personil/'.$request->rand,$value['file']);
+					$pm['file_recorded']=Storage::url($pm['file_recorded']);
+
+				}
+
+				$order[]=$pm;
+			}
+		}
+
 
 
 		$pendidikan_bagian_personil=[];
@@ -123,8 +145,9 @@ class PersonilCtrl extends Controller
 			'jabatan'=>$request->jabatan,
 			'nrp'=>$request->nrp,
 			'pangkat'=>$request->pangkat,
-			'pendidikan_umum'=>json_encode($pendidikan_umum??[]),
-			'pendidikan_bagian_personil'=>json_encode($pendidikan_bagian_personil??[]),
+			'pendidikan_umum'=>str_replace('" : "', '":"', json_encode($pendidikan_umum)),
+			'pendidikan_bagian_personil'=>str_replace('" : "', '":"',json_encode($pendidikan_bagian_personil)),
+			'order'=>str_replace('" : "', '":"', json_encode($order??[])),
 			'id_user_c'=>Auth::User()->id,
 			'created_at'=>TM::now(),
 			'updated_at'=>TM::now(),
@@ -166,6 +189,27 @@ class PersonilCtrl extends Controller
 			Alert::error('',$valid->errors()->first());
 			return back()->withInputs();
 		}
+		$order=[];
+
+		if($request->order){
+			foreach ($request->order as $key => $value) {
+				$pm=[
+					'label'=>$value['label'],
+					'tag'=>$value['tag'],
+					'file_recorded'=>isset($value['file_recorded'])?str_replace(url(''), '', $value['file_recorded']):null
+
+				];
+
+				if(!empty($request->order[$key]['file'])){
+					$pm['file_recorded']=Storage::put('public/personil/'.$request->rand,$value['file']);
+					$pm['file_recorded']=Storage::url($pm['file_recorded']);
+
+				}
+
+				$order[]=$pm;
+			}
+		}
+
 
 		$pendidikan_umum=[];
 		if($request->pendidikan_umum){
@@ -208,8 +252,9 @@ class PersonilCtrl extends Controller
 			'name'=>$request->name,
 			'jabatan'=>$request->jabatan,
 			'pangkat'=>$request->pangkat,
-			'pendidikan_umum'=>json_encode($pendidikan_umum),
-			'pendidikan_bagian_personil'=>json_encode($pendidikan_bagian_personil),
+			'pendidikan_umum'=>str_replace('" : "', '":"', json_encode($pendidikan_umum)),
+			'pendidikan_bagian_personil'=>str_replace('" : "', '":"',json_encode($pendidikan_bagian_personil)),
+			'order'=>str_replace('" : "', '":"', json_encode($order??[])),
 			'nrp'=>$request->nrp,
 			'id_user_u'=>Auth::User()->id,
 			'updated_at'=>TM::now(),
@@ -241,54 +286,60 @@ class PersonilCtrl extends Controller
     	$where=[];
 
     	if($request->pendidikan_umum){
-    		$def[]="p.pendidikan_umum like ('%\"tag\": \"".$request->pendidikan_umum."\"%')";
+    		$def[]="p.pendidikan_umum like ('%\"tag\":\"".$request->pendidikan_umum."\"%')";
     	}
 
-    	if($request->pendidikan_personil){
-    		$def[]="p.pendidikan_bagian_personil like ('%\"tag\": \"".$request->pendidikan_personil."\"%')";
+    	if($request->pendidikan_bagian_personil){
+    		$def[]="p.pendidikan_bagian_personil like ('%\"tag\":\"".$request->pendidikan_bagian_personil."\"%')";
     	}
+
+    	if($request->order){
+    		$def[]="p.order like ('%\"tag\":\"".$request->order."\"%')";
+    	}
+
 
     	if($request->q){
-    		$where[]="p.jabatan like '%".$request->q."%'";
-    		$where[]="p.pangkat like '%".$request->q."%'";
-    		$where[]="p.nrp like '%".$request->q."%'";
-    		$where[]="p.dik_bang_pers like '%".$request->q."%'";
+    		$where[]="p.name like '%".$request->q."%'";
+    		// $where[]="p.jabatan like '%".$request->q."%'";
+    		// $where[]="p.pangkat like '%".$request->q."%'";
+    		// $where[]="p.nrp like '%".$request->q."%'";
+    		// $where[]="p.dik_bang_pers like '%".$request->q."%'";
     	}
     	$whereRaw=[];
 
+
+
     	if(count($def)){
+    		$wd=$def;
+
     		foreach ($def as $key => $value) {
     				foreach ($where as $k => $w) {
-    					$wd=$def;
     					$wd[]=$w;
-    					$whereRaw[]=$wd;
     				}
     		}
+    		$wd=array_unique($wd);
+    		$whereRaw[]='('.implode(') and (', $wd).')';
+
+
     	}else if(count($where)){
     		foreach ($where as $key => $value) {
     			$whereRaw[]=$value;
     		}
     	}
 
-    	if(count($whereRaw)==0){
-    		foreach ($def as $key => $value) {
-    			# code...
-    			$whereRaw[]=$value;
-    		}
-    	}
-
-
+    	
 
     	$data=DB::table('personil as p');
-
     	if(count($whereRaw)){
-    		$data=$data->whereRaw(implode(' or ', $whereRaw));
+    		$data=$data->whereRaw('('.implode(') or (', $whereRaw).')');
+
     	}
     	$data=$data->orderBy('p.id','desc')->paginate(10);
 
     	foreach ($data as $key => $value) {
     		$data[$key]->pendidikan_umum=static::meta_pendidikan($value->pendidikan_umum);
     		$data[$key]->pendidikan_bagian_personil=static::meta_pendidikan($value->pendidikan_bagian_personil);
+    		$data[$key]->order=static::meta_pendidikan($value->order);
     	}
 
     	return view('admin.pages.personil.index')->with([

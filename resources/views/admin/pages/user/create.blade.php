@@ -55,7 +55,7 @@
   				</div>
   				<div class="form-group">
   					<label>KONFIRMASI PASSWORD </label>
-  					<input type="text" class="form-control" required="" name="password_confirmation">
+  					<input type="password" class="form-control" required="" name="password_confirmation">
   				</div>
   			</div>
   		</div>

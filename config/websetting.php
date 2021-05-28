@@ -9,6 +9,18 @@ return [
 	'login_logo'=>'',
 	
 	'meta'=>[
+		'order_tag'=>[
+			'KTP',
+			'PASSPORT WNI',
+			'PASSPORT WNA',
+			'SIM C',
+			'SIM A',
+			'SIM B1',
+			'SIM B2',
+			'SIM D',
+			'SIM INTERNASIONAL',
+			'ASURANSI',
+		],
 		'pendidikan_umum'=>[
 			[
 				'tag'=>'SD',

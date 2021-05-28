@@ -63,6 +63,16 @@ class DataCtrl extends Controller
 
     public function update($id,Request $request){
         $model=Data::find($id);
+        $U=Auth::User();
+
+        if($U->role!=1){
+            if($model->id_user!=$U->id){
+                return abort(404);
+
+            }
+        }
+
+
 
         if($model){
             if(!in_array($model->id_post_type, $this->post_type_list['id'])){
@@ -118,7 +128,7 @@ class DataCtrl extends Controller
                 $dir=scandir(storage_path(str_replace('/storage/', '/app/public/', $model->path_file_pages)))??[];
                 foreach ($dir as $key => $value) {
                     if(!in_array($value, ['.','..'])){
-                        dd(str_replace('/storage/', '/public/', $dokumen['path_file_pages_save']).'/'.$value);
+                      
                          Storage::copy(str_replace('/storage/', '/public/', $model->path_file_pages).'/'.$value, str_replace('/storage/', '/public/', $dokumen['path_file_pages_save']).'/'.$value);
                     }
                 }
@@ -162,10 +172,21 @@ class DataCtrl extends Controller
 
     public function delete($id){
         $data=Data::find($id);
+        $U=Auth::User();
+         if($U->role!=1){
+            if($data->id_user!=$U->id){
+                return abort(404);
 
-        if($data){
-            $data->delete();
+            }
         }
+        if($data){
+            Alert::success('Berhasil','Berhasil Menghapus '.$data->label);
+
+            $data->delete();
+        }else{
+            Alert::error('Gagal','Data Tidak Tersedia');
+        }
+
 
         return back();
     } 
@@ -173,8 +194,10 @@ class DataCtrl extends Controller
     public function index(Request $request){
 
         $post_type=$this->post_type_list['data'];
+
         $request->label=($request->label??'DATA');
         $where=[];
+        $U=Auth::User();
         $post_type_select=isset($post_type[0])?$post_type[0]->id:0;
         $post_type_select_data=isset($post_type[0])?$post_type[0]:null;
 
@@ -184,9 +207,17 @@ class DataCtrl extends Controller
 
         }
 
+        if(!in_array($post_type_select,$post_type->pluck('id')->toArray())){
+            return redirect()->route('admin.data.index');
+        }
+
         $def=[
             ['d.id_post_type ='.$post_type_select],
         ];
+
+        if($U->role!=1){
+            $def[0][]='d.id_user='.$U->id;
+        }
 
         if($request->label){
             $def[0][]="d.label='".$request->label."'";
@@ -224,6 +255,7 @@ class DataCtrl extends Controller
                 $whereRaw[]='('.implode(' and ', $value).')';
             }
         }
+
 
 
 
@@ -370,7 +402,7 @@ class DataCtrl extends Controller
             $a->update([
                 'path_file'=>$path
             ]);
-            return redirect()->route('admin.data.index',['post_type'=>$request->id_post_type]);
+            return redirect()->route('admin.data.index',['post_type'=>$request->id_post_type,'label'=>$a->label]);
         }else{
             return abort(500);
         }
@@ -413,18 +445,26 @@ class DataCtrl extends Controller
 
     public function edit($id){
     	$model=Data::find($id);
+        $U=Auth::User();
         if($model){
             if(!in_array($model->id_post_type, $this->post_type_list['id'])){
                 return abort(404);
             }
 
+            $where=[
+                ['d.id','=',$id]
+            ];
+
+            if($U->role!=1){
+                $where[]=['d.id_user','=',$U->id];
+            }
 
             $taxonomy=DB::table('taxonomy')->where('id_post_type',$model->id_post_type)->get();
              $data=DB::table('data as d')
                 ->join('taxonomy as tx','tx.id','=','d.id_taxonomy')
                 ->join('post_types as pt','pt.id','=','d.id_post_type')
                 ->selectRaw("d.*,tx.name as name_taxonomy,pt.name as name_post_type")
-                ->where('d.id',$id)
+                ->where($where)
                 ->first();
 
             $rand=explode('/',explode('/storage/dokumen_laporan/'.$model->id_post_type.'/'.$model->id_taxonomy.'/'.$data->label.'/',$model->path_file)[1])[0];
