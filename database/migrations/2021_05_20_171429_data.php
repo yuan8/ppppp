@@ -18,6 +18,7 @@ class Data extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('id_post_type')->unsigned();
             $table->bigInteger('id_taxonomy')->unsigned();
+            $table->string('label');
             $table->date('data_date')->nullable();
             $table->string('no_dokumen')->nullable();
             $table->string('perihal')->nullable();

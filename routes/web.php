@@ -26,6 +26,8 @@ Route::prefix('admin')->name('admin.')->middleware('auth:web')->group(function()
 		Route::get('/render-dokumen/{id}/{slug?}', 'DataCtrl@render')->name('render');
 		Route::get('/show-file/{id}/{slug?}', 'DataCtrl@show_file')->name('show_file');
 		Route::get('/create/{type_id}/{slug?}', 'DataCtrl@create')->name('create');
+		Route::get('produk/create/{type_id}/{slug?}/', 'DataCtrl@create_produk')->name('create.produk');
+
 		Route::get('/edit/{id}', 'DataCtrl@edit')->name('edit');
 		Route::put('/edit/{id}', 'DataCtrl@update')->name('update');
 		Route::delete('/delete/{id}', 'DataCtrl@delete')->name('delete');

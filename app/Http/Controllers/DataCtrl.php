@@ -73,15 +73,23 @@ class DataCtrl extends Controller
 
             $rand=$request->rand;
             $dokumen=[
-                'count'=>$model->max_pages,
-                'path_file'=>$model->path_file,
-                'path_file_pages'=>storage_path('app/public/dokumen_laporan/'.$model->id_post_type.'/'.$request->id_taxonomy.'/'.$rand),
-               'path_file_pages_save'=>Storage::url('dokumen_laporan/'.$model->id_post_type.'/'.$request->id_taxonomy.'/'.$rand),
+            'count'=>$model->max_pages,
+                'path_file_pages'=>storage_path('app/public/dokumen_laporan/'.$model->id_post_type.'/'.$request->id_taxonomy.'/'.$model->label.'/'.$rand),
+                'path_file_pages_save'=>Storage::url('dokumen_laporan/'.$model->id_post_type.'/'.$request->id_taxonomy.'/'.$model->label.'/'.$rand),
+                'path_file'=>$model->path_file
             ];
 
 
+            // $dokumen=[
+            //     'count'=>$model->max_pages,
+            //     'path_file'=>$model->path_file,
+            //     'path_file_pages'=>storage_path('app/public/dokumen_laporan/'.$model->id_post_type.'/'.$request->id_taxonomy.'/'.$rand),
+            //    'path_file_pages_save'=>Storage::url('dokumen_laporan/'.$model->id_post_type.'/'.$request->id_taxonomy.'/'.$rand),
+            // ];
+
+
             if($request->dokumen){
-                $path=Storage::put('/public/dokumen_laporan/'.$model->id_post_type.'/'.$request->id_taxonomy.'/'.$rand,$request->dokumen);
+                $path=Storage::put('/public/dokumen_laporan/'.$request->id_post_type.'/'.$request->id_taxonomy.'/'.$request->label.'/'.$rand,$request->dokumen);
                 $path=Storage::url($path);
 
                 $dokumen['path_file']=$path;
@@ -89,7 +97,6 @@ class DataCtrl extends Controller
                 $im = new \Imagick(app_path('../public/'.$path));
                 $dokumen['count']=$im->getNumberImages();
                 $count = $im->getNumberImages();
-
 
                 for ($x = 1;$x <= $im->getNumberImages(); $x++) {
                   $im->previousImage();
@@ -108,8 +115,14 @@ class DataCtrl extends Controller
 
                 }
             }else if((($model->path_file!=$dokumen['path_file']) OR ($model->path_file_pages!=$dokumen['path_file_pages_save']))){
-                
-                Storage::copy($model->path_file_pages, $dokumen['path_file_pages_save']);
+                $dir=scandir(storage_path(str_replace('/storage/', '/app/public/', $model->path_file_pages)))??[];
+                foreach ($dir as $key => $value) {
+                    if(!in_array($value, ['.','..'])){
+                        dd(str_replace('/storage/', '/public/', $dokumen['path_file_pages_save']).'/'.$value);
+                         Storage::copy(str_replace('/storage/', '/public/', $model->path_file_pages).'/'.$value, str_replace('/storage/', '/public/', $dokumen['path_file_pages_save']).'/'.$value);
+                    }
+                }
+               
                 
             }
 
@@ -160,6 +173,7 @@ class DataCtrl extends Controller
     public function index(Request $request){
 
         $post_type=$this->post_type_list['data'];
+        $request->label=($request->label??'DATA');
         $where=[];
         $post_type_select=isset($post_type[0])?$post_type[0]->id:0;
         $post_type_select_data=isset($post_type[0])?$post_type[0]:null;
@@ -174,6 +188,15 @@ class DataCtrl extends Controller
             ['d.id_post_type ='.$post_type_select],
         ];
 
+        if($request->label){
+            $def[0][]="d.label='".$request->label."'";
+
+        }
+
+        if($request->taxonomy){
+            $def[0][]="tx.id=".$request->taxonomy;
+
+        }
 
 
 
@@ -207,7 +230,6 @@ class DataCtrl extends Controller
         $data=DB::table('data as d')
         ->join('trix_rich_texts as c',[
             ['c.model_id','=','d.id'],
-
         ])
          ->join('taxonomy as tx','tx.id','=','d.id_taxonomy')
          ->leftJoin('users as uc','uc.id','=','d.id_user')
@@ -245,7 +267,7 @@ class DataCtrl extends Controller
 
     }
 
-    public function create($type_id,$slug){
+    public function create($type_id=null,$slug=null){
         $type=DB::table('post_types')->where('id',$type_id)->first();
         if($type){
             
@@ -261,27 +283,46 @@ class DataCtrl extends Controller
 
     }
 
+     public function create_produk($type_id=null,$slug=null){
+        $type=DB::table('post_types')->where('id',$type_id)->first();
+        if($type){
+            
+            $taxonomy=DB::table('taxonomy')->where('id_post_type',$type->id)->get();
+
+            return (view('admin.pages.data.create_produk')->with(['taxonomy'=>$taxonomy,'post_type'=>$type,'rand'=>Auth::User()->id.'-'.date('ymdhis').'-'.rand(0,100)]));
+
+        }else{
+
+            return abort(404);
+        }
+
+
+    }
+
 
     public function store(Request $request){
         if(!in_array($request->id_post_type, $this->post_type_list['id'])){
             return back();
         }
 
+        $request->label=($request->label??'DATA');
+
+
         $rand=$request->rand;
         $dokumen=[
             'count'=>0,
-            'path_file_pages'=>storage_path('app/public/dokumen_laporan/'.$request->id_post_type.'/'.$request->id_taxonomy.'/'.$rand),
-            'path_file_pages_save'=>Storage::url('dokumen_laporan/'.$request->id_post_type.'/'.$request->id_taxonomy.'/'.$rand),
+            'path_file_pages'=>storage_path('app/public/dokumen_laporan/'.$request->id_post_type.'/'.$request->id_taxonomy.'/'.$request->label.'/'.$rand),
+            'path_file_pages_save'=>Storage::url('dokumen_laporan/'.$request->id_post_type.'/'.$request->id_taxonomy.'/'.$request->label.'/'.$rand),
             'path_file'=>null
         ];
 
         if($request->dokumen){
-            $path=Storage::put('/public/dokumen_laporan/'.$request->id_post_type.'/'.$request->id_taxonomy.'/'.$rand,$request->dokumen);
+            $path=Storage::put('/public/dokumen_laporan/'.$request->id_post_type.'/'.$request->id_taxonomy.'/'.$request->label.'/'.$rand,$request->dokumen);
             $path=Storage::url($path);
 
             $dokumen['path_file']=$path;
 
-            $im = new \Imagick(app_path('../public/'.$path));
+            $im = new \Imagick(storage_path(str_replace('/storage/','app/public/', $path)));
             $dokumen['count']=$im->getNumberImages();
             $count = $im->getNumberImages();
 
@@ -306,7 +347,7 @@ class DataCtrl extends Controller
         }
 
         $a=Data::create([
-            // 'title'=>$request->perihal??"".$request->id_taxonomy,
+            'label'=>$request->label??"DATA",
             'perihal'=>$request->prihal,
             'id_taxonomy'=>$request->id_taxonomy,
             'id_post_type'=>$request->id_post_type,
@@ -385,7 +426,9 @@ class DataCtrl extends Controller
                 ->selectRaw("d.*,tx.name as name_taxonomy,pt.name as name_post_type")
                 ->where('d.id',$id)
                 ->first();
-            $rand=explode('/',explode('/storage/dokumen_laporan/'.$model->id_post_type.'/'.$model->id_taxonomy.'/',$model->path_file)[1])[0];
+
+            $rand=explode('/',explode('/storage/dokumen_laporan/'.$model->id_post_type.'/'.$model->id_taxonomy.'/'.$data->label.'/',$model->path_file)[1])[0];
+
 
         
 

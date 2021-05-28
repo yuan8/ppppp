@@ -4,7 +4,7 @@
 
 
 @section('content_header')
-    <h1>EDIT DATA {{strtoupper($data->name_post_type)}}</h1>
+    <h1>EDIT {{$data->label}} {{strtoupper($data->name_post_type)}}</h1>
 @stop
 
 @section('content')

@@ -5,6 +5,7 @@
 @section('content_header')
 
     <h1>DATA {{strtoupper(!empty($post_type_select_data)?$post_type_select_data->name:'')}}</h1>
+
  
 @stop
 
@@ -16,9 +17,10 @@
 			  <div class="row">
 		  	<div class="col-md-12">
 		  		<a href="{{route('admin.data.create',['type_id'=>$post_type_select,'slug'=>Str::slug((!empty($post_type_select_data)?$post_type_select_data->name:''))])}}" class="btn btn-primary">TAMBAH DATA {{strtoupper(!empty($post_type_select_data)?$post_type_select_data->name:'')}}</a>
+		  		<a href="{{route('admin.data.create.produk',['type_id'=>$post_type_select,'slug'=>Str::slug((!empty($post_type_select_data)?$post_type_select_data->name:''))])}}" class="btn btn-primary">TAMBAH PRODUK {{strtoupper(!empty($post_type_select_data)?$post_type_select_data->name:'')}}</a>
 		  		<hr>
 		  	</div>
-	   	<div class="col-md-4">
+	   	<div class="col-md-3">
 		   	<div class="form-group">
 		   		<label>JENIS DATA</label>
 		    		<select class="form-control filter-data" name="post_type">
@@ -31,7 +33,19 @@
 		    </div>
 
    		</div>
-   		<div class="col-md-4">
+   			<div class="col-md-3">
+   			<div class="form-group">
+			   		<label>LABEL</label>
+
+	   				<select class="form-control filter-data" name="label" name="taxonomy">
+	   					<option value="DATA" {{$request->label=='DATA'?'selected':''}}>DATA</option>
+	   					<option value="PRODUK" {{$request->label=='PRODUK'?'selected':''}}>PRODUK</option>
+
+	   					
+	   				</select>
+	   			</div>
+	   		</div>
+   		<div class="col-md-3">
    			<div class="form-group">
 			   		<label>BIDANG</label>
 
@@ -43,7 +57,7 @@
 	   				</select>
 	   			</div>
 	   		</div>
-	   		<div class="col-md-4">
+	   		<div class="col-md-3">
 	   			<div class="form-group">
 			   		<label>SEARCH</label>
 	   				<input type="text"  name="q" class="form-control filter-data" placeholder="SEARCH..." value="{{$request->q}}">
@@ -59,6 +73,8 @@
 					<tr>
 						<th>ID</th>
 						<th>BIDANG</th>
+						<th>LABEL</th>
+
 						<th>PERIHAL</th>
 						<th>TANGGAL DOKUMEN</th>
 						<th>TANGGAL ENTRY</th>
@@ -75,6 +91,7 @@
 						<tr>
 							<td>{{$d->id}}</td>
 							<td>{{$d->name_taxonomy}}</td>
+							<td>{{$d->label}}</td>
 							<td>{{$d->perihal}}</td>
 							<td>{{TM::parse($d->data_date)->format('d F Y')}}</td>
 							<td>{{TM::parse($d->created_at)->format('d F Y')}}</td>
@@ -92,7 +109,7 @@
 								<td style="width: 200px;">
 									<div class="btn-group">
 										<a href="{{route('admin.data.edit',['id'=>$d->id])}}" class="btn btn-primary btn-xs">Update</a>
-										<a href="javascript:void(0)" onclick="show_modal_delete('{{route('admin.data.delete',['id'=>$d->id])}}',{{$d->id}})" class="btn btn-danger btn-xs"><i class="fa fa-trash"></i></a>
+										<a href="javascript:void(0)" onclick="show_modal_delete('{{route('admin.data.delete',['id'=>$d->id])}}',{{$d->id}},'{{$d->no_dokumen}}','{{$d->label}}')" class="btn btn-danger btn-xs"><i class="fa fa-trash"></i></a>
 
 									</div>
 									
@@ -118,7 +135,7 @@
 			<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-				<h4 class="modal-title">HAPUS DATA</h4>
+				<h4 class="modal-title">HAPUS</h4>
 			</div>
 			<div class="modal-body">
 				<p class="modal-delete-content"></p>
@@ -137,8 +154,8 @@
 @section('js')
 	<script type="text/javascript">
 
-		function show_modal_delete(link,id){
-			$('#modal-delete .modal-delete-content').html('Hapus Data ID '+id);
+		function show_modal_delete(link,id,no_dokumen,label){
+			$('#modal-delete .modal-delete-content').html('HAPUS '+label+' ID '+id+' / '+no_dokumen );
 			$('#modal-delete-form').attr('action',link);
 			$('#modal-delete').modal();
 		}

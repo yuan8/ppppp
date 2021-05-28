@@ -11,7 +11,7 @@ class Data extends Model
     protected $table='data';
 
     protected $fillable=[
-    	'title','id_taxonomy','id_post_type','id_user','no_dokumen','perihal','max_pages',
+    	'title','id_taxonomy','label','id_post_type','id_user','no_dokumen','perihal','max_pages',
         'path_file','path_file_pages','data_date','data-trixFields','attachment-data-trixFields'
     ];	
 
